@@ -171,15 +171,21 @@
         let p2x = map(h2.keypoints[9].x, 0, 640, 0, width) + gx;
         let p2y = map(h2.keypoints[9].y, 0, 480, 0, height) + gy;
 
-        let linkColor = lerpColor(mainColor, color(255, 0, 0), k);
-        strokeWeight(1 + k * 14);
-        stroke(linkColor);
-        beginShape(); noFill();
-        for(let t = 0; t <= 1; t += 0.05) {
-          vertex(lerp(p1x, p2x, t) + random(-k*20, k*20), lerp(p1y, p2y, t) + random(-k*20, k*20));
+        let linkColor = lerpColor(mainColor, color(255, 255, 100), k);
+        // 電擊效果增加：繪製多重高頻閃電
+        for (let i = 0; i < 4; i++) {
+          strokeWeight(random(1, 4) + k * 5);
+          stroke(linkColor);
+          beginShape(); noFill();
+          for(let t = 0; t <= 1; t += 0.02) {
+            let amp = k * 80; // 增加抖動幅度
+            vertex(lerp(p1x, p2x, t) + random(-amp, amp), lerp(p1y, p2y, t) + random(-amp, amp));
+          }
+          endShape();
         }
-        endShape();
-        fill(255); noStroke(); circle((p1x+p2x)/2, (p1y+p2y)/2, 15 + k*30);
+        fill(255); noStroke(); circle((p1x+p2x)/2, (p1y+p2y)/2, 20 + k*40);
+        // 添加核心爆發光環
+        noFill(); stroke(255, 200); strokeWeight(2); circle((p1x+p2x)/2, (p1y+p2y)/2, random(40, 100) * k);
       }
 
       function drawHoloDial(hand, id, gx, gy) {
@@ -219,12 +225,28 @@
 
       function drawSciFiSkeleton(hand, gx, gy) {
         stroke(red(mainColor), green(mainColor), blue(mainColor), 80);
+        strokeWeight(0.1); // 手指連線粗細改成0.1
         let connections = handPose.getConnections();
         for (let i = 0; i < connections.length; i++) {
           let a = connections[i][0], b = connections[i][1];
           line(map(hand.keypoints[a].x, 0, 640, 0, width) + gx, map(hand.keypoints[a].y, 0, 480, 0, height) + gy,
                map(hand.keypoints[b].x, 0, 640, 0, width) + gx, map(hand.keypoints[b].y, 0, 480, 0, height) + gy);
         }
+        strokeWeight(1); // 恢復預設粗細
+        
+        // 將手上的偵測點改成彩色
+        colorMode(HSB, 255);
+        noStroke();
+        for (let i = 0; i < hand.keypoints.length; i++) {
+          let k = hand.keypoints[i];
+          let x = map(k.x, 0, 640, 0, width) + gx;
+          let y = map(k.y, 0, 480, 0, height) + gy;
+          // 根據關節編號給予不同的彩虹漸變色
+          let hue = map(i, 0, 20, 0, 255);
+          fill(hue, 200, 255);
+          circle(x, y, 7);
+        }
+        colorMode(RGB, 255); // 恢復 RGB 模式
       }
 
       function drawFingertips(hand, gx, gy) {
