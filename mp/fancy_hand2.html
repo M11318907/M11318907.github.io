@@ -224,29 +224,37 @@
       }
 
       function drawSciFiSkeleton(hand, gx, gy) {
-        stroke(red(mainColor), green(mainColor), blue(mainColor), 80);
-        strokeWeight(0.1); // 手指連線粗細改成0.1
         let connections = handPose.getConnections();
+        
+        colorMode(HSB, 255);
+        
+        // 點與點之間要有連線，且搭配彩色光譜風格
+        // (之前設為 0.1 會讓線條完全隱形而斷開，因此改為 1 並搭配半透明色彩來保持「纖細的高科技感」並同時顯示連線)
+        strokeWeight(1.5); 
         for (let i = 0; i < connections.length; i++) {
           let a = connections[i][0], b = connections[i][1];
+          let hue = map(a, 0, 20, 0, 255);
+          stroke(hue, 200, 255, 150); // 半透明漸變彩虹色連線
           line(map(hand.keypoints[a].x, 0, 640, 0, width) + gx, map(hand.keypoints[a].y, 0, 480, 0, height) + gy,
                map(hand.keypoints[b].x, 0, 640, 0, width) + gx, map(hand.keypoints[b].y, 0, 480, 0, height) + gy);
         }
-        strokeWeight(1); // 恢復預設粗細
         
-        // 將手上的偵測點改成彩色
-        colorMode(HSB, 255);
+        // 將手上的偵測點繪製為彩色光點
         noStroke();
         for (let i = 0; i < hand.keypoints.length; i++) {
           let k = hand.keypoints[i];
           let x = map(k.x, 0, 640, 0, width) + gx;
           let y = map(k.y, 0, 480, 0, height) + gy;
-          // 根據關節編號給予不同的彩虹漸變色
+          // 根據關節編號給予彩虹色
           let hue = map(i, 0, 20, 0, 255);
           fill(hue, 200, 255);
-          circle(x, y, 7);
+          circle(x, y, 7); // 彩虹外光暈
+          fill(255);
+          circle(x, y, 3); // 亮白核心
         }
+        
         colorMode(RGB, 255); // 恢復 RGB 模式
+        strokeWeight(1); // 恢復預設粗細
       }
 
       function drawFingertips(hand, gx, gy) {
